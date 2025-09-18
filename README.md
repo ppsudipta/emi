@@ -1,61 +1,223 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Technical Round: EMI Processing
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is a **Laravel-based EMI Processing system** built for a technical round assignment.  
+It demonstrates:  
+- Repository & Service design pattern  
+- Migrations & Seeders  
+- Laravel Authentication  
+- Raw SQL for dynamic EMI table creation  
+- Loan & EMI processing admin screens  
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📌 Features
+1. **Repository & Service Pattern**
+   - Business logic lives in `Services`.
+   - Database queries are abstracted in `Repositories`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+2. **Loan EMI Management**
+   - Form for adding `loan_details`.
+   - Loans stored dynamically in DB.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+3. **Authentication**
+   - Laravel login system.
+   - Seeded admin user for access.
 
-## Learning Laravel
+4. **Loan Details Page**
+   - Displays all loan records.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+5. **EMI Processing Page**
+   - Initially blank with **Process Data** button.
+   - On click:
+     - Creates `emi_details` table dynamically with RAW SQL.
+     - If table exists → dropped and recreated.
+     - Columns: `clientid` + dynamic months (`min(first_payment_date)` → `max(last_payment_date)`).
+   - EMI calculation:
+     - `emi = loan_amount / num_of_payment`
+     - Distributed across months
+     - Last month adjusted to ensure total = loan_amount.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+6. **Result Display**
+   - EMI table with scrollable, styled headers.
+   - Button switches to **View Loan Details** after processing.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📂 Project Structure (Important Files)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+app/
+├── Http/
+│ └── Controllers/
+│ ├── LoanController.php
+│ └── EMIController.php
+├── Models/
+│ ├── LoanDetail.php
+│ └── User.php
+├── Repositories/
+│ └── LoanRepository.php
+└── Services/
+└── EMIService.php
 
-### Premium Partners
+database/
+├── migrations/
+│ ├── 2025_xx_create_loan_details_table.php
+│ └── 2025_xx_create_users_table.php
+└── seeders/
+├── LoanDetailSeeder.php
+└── UserSeeder.php
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+resources/views/
+├── loan_details.blade.php
+├── process_emi.blade.php
+└── auth/ (login screens)
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🗄️ Database Schema
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### `loan_details`
+| Field              | Type    | Description                      |
+|--------------------|---------|----------------------------------|
+| clientid           | INT     | Unique client ID                 |
+| num_of_payment     | INT     | Number of EMIs                   |
+| first_payment_date | DATE    | First payment date               |
+| last_payment_date  | DATE    | Last payment date                |
+| loan_amount        | DECIMAL | Total loan amount                |
 
-## Security Vulnerabilities
+### `users`
+| Field     | Type    | Description       |
+|-----------|---------|-------------------|
+| id        | INT     | Primary key       |
+| username  | VARCHAR | Admin username    |
+| password  | VARCHAR | Hashed password   |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### `emi_details` (Dynamic Table)
+| Field     | Type    | Description           |
+|-----------|---------|-----------------------|
+| clientid  | INT     | Client ID             |
+| YYYY_Mmm  | DECIMAL | EMI per month column  |
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔑 Seed Data
+
+### Loan Details
+| clientid | num_of_payment | first_payment_date | last_payment_date | loan_amount |
+|----------|----------------|--------------------|------------------|-------------|
+| 1001     | 12             | 2018-06-29         | 2019-05-29       | 1550.00     |
+| 1003     | 7              | 2019-02-15         | 2019-08-15       | 6851.94     |
+| 1005     | 17             | 2017-11-09         | 2019-03-09       | 1800.01     |
+
+### User
+| username  | password           |
+|-----------|--------------------|
+| developer | Test@Password123#  |
+
+---
+
+## ⚙️ Setup Instructions
+
+1. **Clone the Repository**
+   ```bash
+   git clone <repo-url>
+   cd emi-processing
+
+    Install PHP Dependencies
+
+composer install
+
+Install Frontend Dependencies
+
+npm install
+
+Build Frontend Assets (Development)
+
+npm run dev
+
+For production:
+
+npm run build
+
+Environment Setup
+
+    Copy .env.example → .env
+
+    Update DB credentials.
+
+Run Migrations & Seeders
+
+php artisan migrate --seed
+
+Run Application
+
+    php artisan serve
+
+    Login
+
+       
+
+        Username: developer
+
+        Password: Test@Password123#
+
+▶️ Usage Flow
+
+    Login with seeded user.
+
+    Visit Loan Details page → verify seeded data.
+
+    Go to Process EMI page → click Process Data.
+
+        Drops & recreates emi_details.
+
+        Adds columns for each month.
+
+        Distributes EMI values.
+
+    EMI results displayed in a dynamic table.
+
+    Button changes to View Loan Details after processing.
+
+🧪 Example EMI Processing
+
+Loan Example:
+
+    clientid: 2, num_of_payment: 3, loan_amount: 200, period: 2019-03-16 → 2019-05-16
+
+    EMI = 200 / 3 = 66.67
+
+    Distribution:
+
+        Mar = 66.67
+
+        Apr = 66.67
+
+        May = 66.66 (adjusted)
+
+✅ Technical Notes
+
+    Repository Pattern → LoanRepository for DB access.
+
+    Service Layer → EMIService for business logic.
+
+    Raw SQL used for emi_details table creation.
+
+    Laravel Auth for login.
+
+    Blade Views for Loan Details & EMI Processing UI.
+
+📖 Future Enhancements
+
+    Pagination for loan & EMI tables.
+
+    Export EMI results to CSV/Excel.
+
+    Role-based user management.
+
+    PHPUnit tests for EMI logic & repository.
+
+👨‍💻 Author
+
+Sudipta Patra
+Senior Laravel Developer | Technical Round Assignment
