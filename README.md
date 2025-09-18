@@ -41,35 +41,6 @@ It demonstrates:
    - EMI table with scrollable, styled headers.
    - Button switches to **View Loan Details** after processing.
 
----
-
-## 📂 Project Structure (Important Files)
-
-app/
-├── Http/
-│ └── Controllers/
-│ ├── LoanController.php
-│ └── EMIController.php
-├── Models/
-│ ├── LoanDetail.php
-│ └── User.php
-├── Repositories/
-│ └── LoanRepository.php
-└── Services/
-└── EMIService.php
-
-database/
-├── migrations/
-│ ├── 2025_xx_create_loan_details_table.php
-│ └── 2025_xx_create_users_table.php
-└── seeders/
-├── LoanDetailSeeder.php
-└── UserSeeder.php
-
-resources/views/
-├── loan_details.blade.php
-├── process_emi.blade.php
-└── auth/ (login screens)
 
 
 ---
